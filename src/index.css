@@ -1,0 +1,740 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 212 45% 97%;
+    --foreground: 218 69% 16%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 218 69% 16%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 69% 16%;
+
+    --primary: 211 100% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 100% 95%;
+    --secondary-foreground: 218 69% 22%;
+
+    --muted: 216 30% 95%;
+    --muted-foreground: 215 20% 38%;
+
+    --accent: 211 100% 93%;
+    --accent-foreground: 218 69% 18%;
+
+    /* Hero Section Design */
+    --hero-gradient: linear-gradient(135deg, hsl(212 100% 45%) 0%, hsl(210 100% 55%) 50%, hsl(205 100% 65%) 100%);
+    --hero-overlay: linear-gradient(135deg, hsl(210 100% 20% / 0.8), hsl(200 100% 30% / 0.9));
+    --hero-text: 0 0% 100%;
+    --hero-text-muted: 210 100% 90%;
+    
+    /* Enhanced UI/UX Design System */
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
+    --gradient-card-hover: linear-gradient(145deg, hsl(210 100% 99%), hsl(210 100% 96%));
+    --shadow-card: 0 12px 32px -20px hsl(218 69% 16% / 0.35), 0 1px 2px hsl(218 69% 16% / 0.05);
+    --shadow-card-hover: 0 18px 34px -18px hsl(211 100% 40% / 0.28);
+    --shadow-profile: 0 18px 44px -18px hsl(218 69% 16% / 0.35);
+    --border-enhanced: hsl(215 24% 86%);
+    --border-card: hsl(215 24% 89%);
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s ease-out;
+    
+    /* Professional Color Palette */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 210 100% 50%;
+    --info-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 24% 86%;
+    --input: 215 24% 86%;
+    --ring: 211 100% 42%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 40% 11%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 40% 11%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 211 100% 62%;
+    --primary-foreground: 222 47% 7%;
+
+    --secondary: 222 35% 18%;
+    --secondary-foreground: 210 100% 92%;
+
+    --muted: 222 30% 16%;
+    --muted-foreground: 215 20% 72%;
+
+    --accent: 222 35% 20%;
+    --accent-foreground: 210 100% 92%;
+
+    --shadow-card: 0 10px 30px -18px hsl(0 0% 0% / 0.7);
+    --shadow-card-hover: 0 18px 38px -18px hsl(211 100% 55% / 0.35);
+    --shadow-profile: 0 18px 44px -18px hsl(0 0% 0% / 0.8);
+
+    --success: 142 70% 45%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 28% 20%;
+    --input: 222 28% 20%;
+    --ring: 211 100% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  button,
+  a {
+    letter-spacing: 0;
+  }
+
+  .bento-card {
+    @apply relative isolate rounded-3xl border border-border bg-card p-5 shadow-card transition duration-300 sm:p-6;
+  }
+
+  /* Cursor spotlight: a soft glow that follows the pointer inside the hovered card. */
+  .bento-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(22rem circle at var(--mx, 50%) var(--my, 0%), hsl(var(--primary) / 0.12), transparent 65%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .bento-card:hover {
+    @apply -translate-y-1 border-primary/40 shadow-card-hover;
+  }
+
+  .bento-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Small pills (tools, skills): lift, tint, and nudge the icon. */
+  .hover-chip {
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-chip:hover {
+    @apply -translate-y-0.5 border-primary/50 bg-primary/10 text-primary shadow-sm;
+  }
+
+  .hover-chip img,
+  .hover-chip svg {
+    transition: transform 0.2s ease;
+  }
+
+  .hover-chip:hover img,
+  .hover-chip:hover svg {
+    transform: scale(1.18) rotate(-4deg);
+  }
+
+  /* List rows (tracks, bullets, education): soft tint and a small nudge to the right. */
+  .hover-row {
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .hover-row:hover {
+    @apply translate-x-1 bg-primary/[0.07] text-foreground;
+  }
+
+  .logo-wrap img {
+    transition: transform 0.3s ease;
+  }
+
+  .bento-card:hover .logo-wrap img {
+    transform: scale(1.1);
+  }
+
+  /* Services cards: light cards in light mode, navy glass in dark mode. In dark mode, local tokens re-theme the text, borders and accents inside. */
+  .service-card {
+    background: linear-gradient(165deg, hsl(var(--card)) 0%, hsl(var(--primary) / 0.06) 100%);
+  }
+
+  .dark .service-card {
+    --foreground: 0 0% 100%;
+    --muted-foreground: 213 45% 84%;
+    --border: 216 90% 38%;
+    --primary: 208 100% 62%;
+    --card: 222 80% 14%;
+    background:
+      radial-gradient(60% 45% at 85% 0%, rgba(37, 99, 235, 0.35), transparent 70%),
+      linear-gradient(165deg, #06286b 0%, #041a4a 55%, #03123a 100%);
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 18px 40px -18px rgba(2, 18, 70, 0.7), inset 0 1px 0 rgba(147, 197, 253, 0.18);
+    color: #fff;
+  }
+
+  .dark .service-card:hover {
+    border-color: rgba(96, 165, 250, 0.9);
+    box-shadow: 0 22px 48px -16px rgba(37, 99, 235, 0.55), 0 0 0 1px rgba(96, 165, 250, 0.45), inset 0 1px 0 rgba(147, 197, 253, 0.3);
+  }
+
+  .service-card .service-art {
+    transition: transform 0.6s ease;
+  }
+
+  .service-card:hover .service-art {
+    transform: scale(1.05);
+  }
+
+  .marquee-item {
+    transition: color 0.2s ease;
+  }
+
+  .marquee-item:hover {
+    @apply text-primary;
+  }
+
+  .marquee-item img,
+  .marquee-item svg {
+    transition: transform 0.2s ease;
+  }
+
+  .marquee-item:hover img,
+  .marquee-item:hover svg {
+    transform: scale(1.25);
+  }
+
+  .sidebar-social {
+    @apply flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition duration-200 hover:-translate-y-0.5 hover:scale-110 hover:border-primary/40 hover:bg-primary/10 hover:text-primary hover:shadow-card;
+  }
+
+  /* Highlight tiles: discipline icon, short value, one-line fact. */
+  .stat-tile {
+    @apply relative flex items-start gap-3.5 overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card to-background p-4 transition duration-200;
+  }
+
+  .stat-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: hsl(var(--primary));
+    opacity: 0.55;
+    transition: opacity 0.2s ease, width 0.2s ease;
+  }
+
+  .stat-tile:hover {
+    @apply -translate-y-0.5 border-primary/40 shadow-sm;
+  }
+
+  .stat-tile:hover::after {
+    opacity: 1;
+    width: 5px;
+  }
+
+  .stat-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary transition-all duration-200;
+  }
+
+  .stat-tile:hover .stat-icon {
+    @apply scale-110 bg-primary text-primary-foreground;
+  }
+
+  .stat-value {
+    @apply mt-0.5 origin-left text-2xl font-extrabold leading-tight tracking-tight text-primary transition-transform duration-200;
+  }
+
+  .stat-tile:hover .stat-value {
+    @apply scale-105;
+  }
+
+  .icon-chip {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm;
+  }
+
+  .contact-faq::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(28rem circle at 0% 0%, hsl(var(--primary) / 0.22), transparent 60%),
+      radial-gradient(24rem circle at 100% 100%, hsl(var(--primary) / 0.18), transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Animations */
+  .fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+  
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+}
+
+@layer components {
+  /* Theme switch: circular reveal via the View Transitions API, with a colour-fade fallback. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 2;
+  }
+
+  html.theme-fade,
+  html.theme-fade *,
+  html.theme-fade *::before,
+  html.theme-fade *::after {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, fill 0.5s ease, stroke 0.5s ease, box-shadow 0.5s ease !important;
+  }
+
+  /* Live background: drifting glows and flowing contour lines (the node network is drawn on a canvas). */
+  .live-glow {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(closest-side, hsl(var(--primary) / 0.22), hsl(var(--primary) / 0) 100%);
+    will-change: transform;
+  }
+
+  .dark .live-glow {
+    background: radial-gradient(closest-side, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0) 100%);
+  }
+
+  .live-glow-a {
+    left: -8rem;
+    top: -10rem;
+    height: 42rem;
+    width: 42rem;
+    animation: glow-drift-a 26s ease-in-out infinite alternate;
+  }
+
+  .live-glow-b {
+    right: -10rem;
+    top: 28%;
+    height: 38rem;
+    width: 38rem;
+    animation: glow-drift-b 32s ease-in-out infinite alternate;
+  }
+
+  .live-glow-c {
+    bottom: -14rem;
+    left: 32%;
+    height: 40rem;
+    width: 40rem;
+    animation: glow-drift-c 38s ease-in-out infinite alternate;
+  }
+
+  .live-contour {
+    animation: contour-flow 20s ease-in-out infinite alternate;
+  }
+
+  .live-contour-2 { animation-duration: 26s; animation-delay: -6s; }
+  .live-contour-3 { animation-duration: 30s; animation-delay: -12s; }
+  .live-contour-4 { animation-duration: 24s; animation-delay: -3s; }
+
+  @keyframes glow-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(14rem, 10rem, 0) scale(1.15); }
+  }
+
+  @keyframes glow-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.1); }
+    to { transform: translate3d(-16rem, -8rem, 0) scale(0.9); }
+  }
+
+  @keyframes glow-drift-c {
+    from { transform: translate3d(0, 0, 0) scale(0.95); }
+    to { transform: translate3d(-12rem, -6rem, 0) scale(1.2); }
+  }
+
+  @keyframes contour-flow {
+    from { transform: translate3d(-18px, -10px, 0); }
+    to { transform: translate3d(22px, 14px, 0); }
+  }
+
+  /* Profile photo: on hover it comes alive with a spinning ring, ripples, orbiting tool logos, a light sweep, and a cursor-following tilt. */
+  .avatar-tilt {
+    transform: perspective(520px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--s, 1));
+    transition: transform 0.18s ease-out;
+    will-change: transform;
+  }
+
+  .avatar-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    background: conic-gradient(from 0deg, hsl(var(--primary)), hsl(190 100% 62%), hsl(var(--primary) / 0.15), hsl(var(--primary)));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .avatar:hover .avatar-ring {
+    opacity: 1;
+    animation: avatar-spin 3s linear infinite;
+  }
+
+  .avatar-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--primary) / 0.55);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .avatar:hover .avatar-ripple {
+    animation: avatar-ripple 1.9s ease-out infinite;
+  }
+
+  .avatar:hover .avatar-ripple-2 {
+    animation-delay: 0.95s;
+  }
+
+  .avatar-orbit {
+    position: absolute;
+    inset: -10px;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none;
+  }
+
+  .avatar:hover .avatar-orbit {
+    opacity: 1;
+    transform: scale(1);
+    animation: avatar-spin 10s linear infinite;
+  }
+
+  .avatar-orbit-item {
+    position: absolute;
+    inset: 0;
+    transform: rotate(calc(var(--i) * 90deg));
+  }
+
+  .avatar-orbit-chip {
+    position: absolute;
+    left: 50%;
+    top: -13px;
+    margin-left: -13px;
+    display: flex;
+    height: 26px;
+    width: 26px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-card);
+    transform: rotate(calc(var(--i) * -90deg));
+  }
+
+  .avatar:hover .avatar-orbit-chip {
+    animation: avatar-counter 10s linear infinite;
+  }
+
+  /* The cartoon version paints in from the centre on hover. */
+  .avatar-cartoon {
+    clip-path: circle(0% at 50% 50%);
+    transition: clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .avatar:hover .avatar-cartoon {
+    clip-path: circle(75% at 50% 50%);
+  }
+
+  .avatar-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.5) 50%, transparent 68%);
+    transform: translateX(-130%);
+    pointer-events: none;
+  }
+
+  .avatar:hover .avatar-shine {
+    animation: avatar-shine 2.2s ease-in-out infinite;
+  }
+
+  @keyframes avatar-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes avatar-counter {
+    from { transform: rotate(calc(var(--i) * -90deg)); }
+    to { transform: rotate(calc(var(--i) * -90deg - 360deg)); }
+  }
+
+  @keyframes avatar-ripple {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  @keyframes avatar-shine {
+    0% { transform: translateX(-130%); }
+    55%, 100% { transform: translateX(130%); }
+  }
+
+  /* Name and logo: letters hop in a wave and flash the accent colour; the verified badge spins and pulses. */
+  .name-char {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  .name-wave:hover .name-char {
+    animation: char-hop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+
+  .name-wave:hover .name-dot {
+    animation-name: dot-bounce;
+  }
+
+  .verified-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--primary) / 0.6);
+    opacity: 0;
+  }
+
+  .name-wave:hover .verified-badge svg {
+    animation: badge-spin 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .name-wave:hover .verified-ring {
+    animation: badge-ring 1.2s ease-out infinite;
+  }
+
+  @keyframes char-hop {
+    0% { transform: translateY(0) scale(1); color: inherit; }
+    35% { transform: translateY(-7px) scale(1.18); color: hsl(var(--primary)); }
+    100% { transform: translateY(0) scale(1); color: inherit; }
+  }
+
+  /* Role line: a quicker, lower hop than the name, with a soft colour sweep. */
+  .role-wave:hover .name-char {
+    animation: role-hop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--i) * 22ms);
+  }
+
+  @keyframes role-hop {
+    0% { transform: translateY(0); color: inherit; }
+    40% { transform: translateY(-4px); color: hsl(var(--primary)); }
+    100% { transform: translateY(0); color: inherit; }
+  }
+
+  /* Location: the pin drops in and bounces while the map card is open or hovered. */
+  .location-trigger:hover .location-pin,
+  .location-trigger:focus-visible .location-pin,
+  .location-trigger[aria-expanded="true"] .location-pin {
+    animation: pin-drop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: 50% 100%;
+  }
+
+  @keyframes pin-drop {
+    0% { transform: translateY(-8px) scale(0.8); }
+    55% { transform: translateY(1px) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  /* Clock card: the face's second hand sweeps, the icon wiggles with a pulsing ring, the time turns accent, and a seconds bar fills along the bottom. */
+  .clock-hand {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+  }
+
+  .clock-hand-s {
+    opacity: 0;
+    animation: clock-sweep 60s linear infinite;
+    animation-delay: var(--sec, 0s);
+    transition: opacity 0.2s ease;
+  }
+
+  .clock-card:hover .clock-hand-s { opacity: 1; }
+
+  .clock-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid hsl(var(--primary) / 0.6);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .clock-card:hover .clock-ring { animation: badge-ring 1.2s ease-out infinite; }
+  .clock-card:hover .clock-icon { animation: clock-wiggle 0.7s ease-in-out; }
+
+  .clock-time {
+    display: inline-block;
+    transform-origin: left center;
+    transition: color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .clock-card:hover .clock-time {
+    color: hsl(var(--primary));
+    transform: scale(1.08);
+  }
+
+  .clock-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: hsl(var(--primary));
+    transform-origin: left center;
+    opacity: 0;
+    animation: clock-fill 60s linear infinite;
+    animation-delay: var(--sec, 0s);
+    transition: opacity 0.2s ease;
+  }
+
+  .clock-card:hover .clock-progress { opacity: 0.85; }
+
+  @keyframes clock-sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes clock-fill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes clock-wiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(-12deg) scale(1.12); }
+    55% { transform: rotate(9deg) scale(1.12); }
+    80% { transform: rotate(-4deg) scale(1.05); }
+  }
+
+  @keyframes dot-bounce {
+    0% { transform: translateY(0) scale(1); }
+    35% { transform: translateY(-9px) scale(1.5); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  @keyframes badge-spin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(200deg) scale(1.35); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+
+  @keyframes badge-ring {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(2.3); opacity: 0; }
+  }
+
+  .chat-dot {
+    animation: chat-dot 1s ease-in-out infinite;
+  }
+
+  @keyframes chat-dot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-3px); opacity: 1; }
+  }
+
+  .theme-icon {
+    animation: theme-icon-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes theme-icon-in {
+    from { transform: rotate(-90deg) scale(0.4); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+
+  .tools-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+
+  .tools-marquee-track {
+    animation: tools-marquee 70s linear infinite;
+  }
+
+  .tools-marquee:hover .tools-marquee-track,
+  .tools-marquee:focus-within .tools-marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes tools-marquee {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+}
+
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  .skip-link {
+    @apply fixed left-3 top-3 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-card transition-transform focus:translate-y-0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; }
+    .theme-icon, .chat-dot, .live-glow, .live-contour, .avatar-ring, .avatar-ripple, .avatar-orbit, .avatar-orbit-chip, .avatar-shine, .name-wave:hover .name-char, .name-wave:hover .verified-badge svg, .name-wave:hover .verified-ring, .role-wave:hover .name-char, .location-trigger:hover .location-pin, .location-trigger:focus-visible .location-pin, .location-trigger[aria-expanded="true"] .location-pin, .clock-hand-s, .clock-progress, .clock-card:hover .clock-ring, .clock-card:hover .clock-icon { animation: none !important; }
+    .clock-hand-s, .clock-progress { display: none; }
+    .clock-card:hover .clock-time { transform: none !important; }
+    .bento-card:hover, .hover-chip:hover, .hover-row:hover, .stat-tile:hover, .stat-tile:hover .stat-icon, .stat-tile:hover .stat-value, .sidebar-social:hover, .hover-chip:hover img, .hover-chip:hover svg, .marquee-item:hover img, .marquee-item:hover svg, .bento-card:hover .logo-wrap img, .service-card:hover .service-art { transform: none !important; }
+    .tools-marquee { overflow-x: auto; }
+    .tools-marquee-track { animation: none !important; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
