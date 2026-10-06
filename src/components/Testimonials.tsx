@@ -93,7 +93,7 @@ const Testimonials = ({ onContact }: { onContact: () => void }) => {
   const visible = filter === "All" ? testimonials : testimonials.filter((t) => t.category === filter);
 
   return (
-    <section id="testimonials" className="mt-7 scroll-mt-24 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4 lg:scroll-mt-6">
+    <section id="testimonials" className="mt-7 scroll-mt-24 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4 lg:scroll-mt-6">
       <div className="flex items-start gap-3 px-3 pb-4 pt-3 sm:px-4">
         <span className="icon-chip"><MessageSquareQuote className="h-5 w-5" /></span>
         <div className="min-w-0">

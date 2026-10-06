@@ -650,16 +650,15 @@ const useActiveSection = (ids: string[]) => {
 
 /** Light/dark theme: follows the system until the visitor picks one. */
 const useTheme = () => {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
+  const [dark, setDark] = useState(() => {
     let stored: string | null = null;
     try {
       stored = localStorage.getItem("theme");
     } catch {
       /* storage can be unavailable */
     }
-    setDark(stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches);
-  }, []);
+    return stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
@@ -1044,39 +1043,17 @@ const ClockFace = ({ hour, minute, second, className }: { hour: number; minute: 
   );
 };
 
-/** Hero clock, shown only where the profile sidebar is not (phones and tablets). */
-const LiveClock = () => {
-  const { now, time, date, zone, hour, minute, second } = useMeljhonTime();
-  const sweep = useSweepOffset();
-  return (
-    <div className="clock-card relative mt-5 flex items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card px-4 py-2.5 shadow-card lg:hidden" role="group" aria-label="Meljhon's local time" style={{ width: "fit-content", "--sec": sweep } as React.CSSProperties}>
-      <span className="clock-icon relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <span aria-hidden="true" className="clock-ring rounded-xl" />
-        <ClockFace hour={hour} minute={minute} second={second} className="relative h-[22px] w-[22px]" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Meljhon's time · Davao</p>
-        <p className="text-base font-extrabold leading-tight tabular-nums text-foreground">
-          <time className="clock-time" dateTime={now.toISOString()}>{time}</time>
-          <span className="ml-2 text-xs font-semibold text-muted-foreground">{date}{zone && ` · ${zone}`}</span>
-        </p>
-      </div>
-      <span aria-hidden="true" className="clock-progress" />
-    </div>
-  );
-};
-
 /** Compact live clock for the profile card, in Meljhon's time zone (GMT+8). */
 const SidebarClock = () => {
   const { now, time, date, zone, hour, minute, second } = useMeljhonTime();
   const sweep = useSweepOffset();
   return (
-    <div role="group" aria-label="Meljhon's local time" style={{ "--sec": sweep } as React.CSSProperties} className="clock-card relative mt-4 flex items-center gap-2.5 overflow-hidden rounded-2xl border border-border bg-background p-3 text-left transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm">
+    <div role="group" aria-label="Meljhon's local time" style={{ "--sec": sweep } as React.CSSProperties} className="clock-card relative mt-4 flex items-center max-lg:justify-center gap-2.5 overflow-hidden rounded-2xl border border-border bg-background p-3 text-left transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm">
       <span className="clock-icon relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <span aria-hidden="true" className="clock-ring rounded-lg" />
         <ClockFace hour={hour} minute={minute} second={second} className="relative h-5 w-5" />
       </span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 max-lg:flex-none max-lg:text-center">
         <p className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Meljhon's time · Davao</p>
         <p className="text-sm font-extrabold leading-tight tabular-nums text-foreground">
           <time className="clock-time" dateTime={now.toISOString()}>{time}</time>
@@ -1088,17 +1065,121 @@ const SidebarClock = () => {
   );
 };
 
+/** "Open to remote work" status with a live ping dot. */
+const AvailabilityBadge = () => (
+  <span className="group/live inline-flex cursor-default items-center gap-2 text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary">
+    <span className="relative flex h-2.5 w-2.5">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success transition-transform duration-200 group-hover/live:scale-125" />
+    </span>
+    Open to remote work
+  </span>
+);
+
+/**
+ * Photo, name, roles, location, local time, and contact icons. The same block is the top of the desktop sidebar and
+ * the top of the page on phones, so Meljhon's photo and name look identical on every screen.
+ */
+const ProfileIdentity = ({ themeButton, avatarSize = "h-32 w-32" }: { themeButton?: React.ReactNode; avatarSize?: string }) => (
+  <div className="text-center">
+    <div
+      className={`avatar group/avatar relative mx-auto ${avatarSize}`}
+      onPointerMove={(event) => {
+        if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const box = event.currentTarget.getBoundingClientRect();
+        const tilt = event.currentTarget.querySelector<HTMLElement>(".avatar-tilt");
+        if (!tilt) return;
+        tilt.style.setProperty("--ry", `${((event.clientX - box.left) / box.width - 0.5) * 22}deg`);
+        tilt.style.setProperty("--rx", `${-((event.clientY - box.top) / box.height - 0.5) * 22}deg`);
+        tilt.style.setProperty("--s", "1.07");
+      }}
+      onPointerLeave={(event) => {
+        const tilt = event.currentTarget.querySelector<HTMLElement>(".avatar-tilt");
+        ["--rx", "--ry", "--s"].forEach((name) => tilt?.style.removeProperty(name));
+      }}
+    >
+      <span aria-hidden="true" className="absolute inset-0 rounded-full bg-primary/25 blur-2xl transition-all duration-300 group-hover/avatar:scale-125 group-hover/avatar:bg-primary/45" />
+      <span aria-hidden="true" className="avatar-ring" />
+      <span aria-hidden="true" className="avatar-ripple" />
+      <span aria-hidden="true" className="avatar-ripple avatar-ripple-2" />
+      <span aria-hidden="true" className="avatar-orbit">
+        {orbitLogos.map((name, i) => (
+          <span key={name} className="avatar-orbit-item" style={{ "--i": i } as React.CSSProperties}>
+            <span className="avatar-orbit-chip" style={{ "--i": i } as React.CSSProperties}>
+              <img src={logo[name]} alt="" width={14} height={14} className="h-3.5 w-3.5 object-contain" />
+            </span>
+          </span>
+        ))}
+      </span>
+      <span className="avatar-tilt relative block h-full w-full">
+        <span className="avatar-face relative block h-full w-full overflow-hidden rounded-full border-4 border-card shadow-profile transition-colors duration-300 group-hover/avatar:border-primary/60">
+          <img src={profileImage} alt="Meljhon Deaño" width={300} height={300} fetchPriority="high" decoding="async" className="h-full w-full object-cover object-center" />
+          <img src={profileCartoon} alt="" aria-hidden="true" width={300} height={300} decoding="async" className="avatar-cartoon absolute inset-0 h-full w-full object-cover object-center" />
+          <span aria-hidden="true" className="avatar-shine" />
+        </span>
+      </span>
+    </div>
+    <div className="name-wave relative z-10 mt-4 flex cursor-default items-center justify-center gap-2">
+      <p className="text-2xl font-extrabold tracking-tight text-foreground">
+        <WaveText text="Meljhon Deaño" />
+      </p>
+      <span className="verified-badge relative flex h-5 w-5 shrink-0 items-center justify-center">
+        <span aria-hidden="true" className="verified-ring" />
+        <CheckCircle2 className="relative h-5 w-5 fill-primary text-primary-foreground" aria-label="Verified" />
+      </span>
+    </div>
+    <p className="role-wave mt-1 cursor-default text-sm font-medium leading-snug text-muted-foreground">
+      <span className="block"><WaveText text="Technical Virtual Assistant" /></span>
+      <span className="block"><WaveText text="IT Support · Executive Assistant" /></span>
+    </p>
+    <LocationHover />
+    <SidebarClock />
+    <div className="mt-4 flex items-center justify-center gap-2.5">
+      <a href={`mailto:${CONTACT.email}`} aria-label="Email Meljhon" className="sidebar-social"><Mail className="h-4 w-4" /></a>
+      <a href={CONTACT.phoneHref} aria-label="Call Meljhon" className="sidebar-social"><Phone className="h-4 w-4" /></a>
+      <a href={CONTACT.linkedin} target="_blank" rel="noreferrer" aria-label="Meljhon on LinkedIn (opens in new tab)" className="sidebar-social"><Linkedin className="h-4 w-4" /></a>
+      {themeButton}
+    </div>
+  </div>
+);
+
 const PortfolioDashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     try {
-      return localStorage.getItem("sidebar") !== "hidden";
+      return sessionStorage.getItem("sidebar") !== "hidden";
     } catch {
       return true;
     }
   });
   const activeSection = useActiveSection(sectionIds);
   const { dark, toggle } = useTheme();
+
+  // The sidebar profile slides in as the loading screen lifts, so a first-time visitor sees it arrive.
+  const [entered, setEntered] = useState(() => !document.getElementById("app-loader"));
+  useEffect(() => {
+    if (entered) return;
+    const done = () => setEntered(true);
+    window.addEventListener("splash-done", done, { once: true });
+    const failsafe = window.setTimeout(done, 9000);
+    return () => {
+      window.removeEventListener("splash-done", done);
+      window.clearTimeout(failsafe);
+    };
+  }, [entered]);
+  const showSidebar = sidebarOpen && entered;
+
+  // On phones the profile card opens the page; once it scrolls away the header shows a compact photo and name instead.
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [profileInView, setProfileInView] = useState(true);
+  useEffect(() => {
+    const el = profileRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setProfileInView(entry.isIntersecting), { rootMargin: "-64px 0px 0px 0px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const headerRef = useRef<HTMLElement>(null);
 
   // Cursor spotlight: tell the hovered card where the pointer is so its glow can follow it.
   useEffect(() => {
@@ -1124,14 +1205,21 @@ const PortfolioDashboard = () => {
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    const onDown = (e: PointerEvent) => {
+      if (!headerRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
   }, [menuOpen]);
 
   const toggleSidebar = () =>
     setSidebarOpen((open) => {
       try {
-        localStorage.setItem("sidebar", open ? "hidden" : "open");
+        sessionStorage.setItem("sidebar", open ? "hidden" : "open");
       } catch {
         /* storage unavailable: the choice just won't persist */
       }
@@ -1155,11 +1243,21 @@ const PortfolioDashboard = () => {
       <ScrollUX onTop={() => scrollTo("#home")} />
       <a href="#main" className="skip-link">Skip to main content</a>
 
-      <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-card/90 px-5 backdrop-blur lg:hidden">
-        <button type="button" onClick={() => handleNavigate("#home")} className="name-wave text-lg font-extrabold text-foreground" aria-label="MJD, go to top">
-          <WaveText text="MJD" /><span className="name-char name-dot text-primary" style={{ "--i": 3 } as React.CSSProperties}>.</span>
-        </button>
-        <div className="flex items-center gap-1">
+      <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between gap-3 border-b border-border bg-card/90 px-4 backdrop-blur sm:px-5 lg:hidden">
+        {profileInView ? (
+          <button type="button" onClick={() => handleNavigate("#home")} className="name-wave text-lg font-extrabold text-foreground" aria-label="MJD, go to top">
+            <WaveText text="MJD" /><span className="name-char name-dot text-primary" style={{ "--i": 3 } as React.CSSProperties}>.</span>
+          </button>
+        ) : (
+          <button type="button" onClick={() => handleNavigate("#home")} className="flex min-w-0 items-center gap-2.5 text-left animate-in fade-in slide-in-from-left-2 duration-300" aria-label="Meljhon Deaño, go to top">
+            <img src={profileImage} alt="" width={36} height={36} decoding="async" className="h-9 w-9 shrink-0 rounded-full border-2 border-card object-cover shadow-profile" />
+            <span className="flex min-w-0 items-center gap-1.5 text-[17px] font-extrabold tracking-tight text-foreground">
+              <span className="truncate">Meljhon Deaño</span>
+              <CheckCircle2 aria-hidden="true" className="h-4 w-4 shrink-0 fill-primary text-primary-foreground" />
+            </span>
+          </button>
+        )}
+        <div className="flex shrink-0 items-center gap-1">
           <Button variant="ghost" size="icon" onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}>
             {dark ? <Sun key="sun" className="theme-icon h-5 w-5" /> : <Moon key="moon" className="theme-icon h-5 w-5" />}
           </Button>
@@ -1181,71 +1279,12 @@ const PortfolioDashboard = () => {
       <aside
         id="side-nav"
         aria-label="Profile and navigation"
-        className={`fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col overflow-y-auto border-r border-border bg-card/90 px-6 py-6 backdrop-blur transition-[transform,visibility] duration-300 ease-out lg:flex ${sidebarOpen ? "translate-x-0" : "invisible -translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col overflow-y-auto border-r border-border bg-card/90 px-6 py-6 backdrop-blur transition-[transform,visibility] duration-300 ease-out lg:flex ${showSidebar ? "translate-x-0" : "invisible -translate-x-full"}`}
       >
         <button type="button" onClick={toggleSidebar} aria-label="Hide side navigation" aria-expanded={sidebarOpen} aria-controls="side-nav" className="sidebar-social absolute right-3 top-3 h-9 w-9">
           <PanelLeftClose className="h-4 w-4" />
         </button>
-        <div className="text-center">
-          <div
-            className="avatar group/avatar relative mx-auto h-32 w-32"
-            onPointerMove={(event) => {
-              if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-              const box = event.currentTarget.getBoundingClientRect();
-              const tilt = event.currentTarget.querySelector<HTMLElement>(".avatar-tilt");
-              if (!tilt) return;
-              tilt.style.setProperty("--ry", `${((event.clientX - box.left) / box.width - 0.5) * 22}deg`);
-              tilt.style.setProperty("--rx", `${-((event.clientY - box.top) / box.height - 0.5) * 22}deg`);
-              tilt.style.setProperty("--s", "1.07");
-            }}
-            onPointerLeave={(event) => {
-              const tilt = event.currentTarget.querySelector<HTMLElement>(".avatar-tilt");
-              ["--rx", "--ry", "--s"].forEach((name) => tilt?.style.removeProperty(name));
-            }}
-          >
-            <span aria-hidden="true" className="absolute inset-0 rounded-full bg-primary/25 blur-2xl transition-all duration-300 group-hover/avatar:scale-125 group-hover/avatar:bg-primary/45" />
-            <span aria-hidden="true" className="avatar-ring" />
-            <span aria-hidden="true" className="avatar-ripple" />
-            <span aria-hidden="true" className="avatar-ripple avatar-ripple-2" />
-            <span aria-hidden="true" className="avatar-orbit">
-              {orbitLogos.map((name, i) => (
-                <span key={name} className="avatar-orbit-item" style={{ "--i": i } as React.CSSProperties}>
-                  <span className="avatar-orbit-chip" style={{ "--i": i } as React.CSSProperties}>
-                    <img src={logo[name]} alt="" width={14} height={14} className="h-3.5 w-3.5 object-contain" />
-                  </span>
-                </span>
-              ))}
-            </span>
-            <span className="avatar-tilt relative block h-full w-full">
-              <span className="avatar-face relative block h-full w-full overflow-hidden rounded-full border-4 border-card shadow-profile transition-colors duration-300 group-hover/avatar:border-primary/60">
-                <img src={profileImage} alt="Meljhon Deaño" width={300} height={300} fetchPriority="high" decoding="async" className="h-full w-full object-cover object-center" />
-                <img src={profileCartoon} alt="" aria-hidden="true" width={300} height={300} decoding="async" className="avatar-cartoon absolute inset-0 h-full w-full object-cover object-center" />
-                <span aria-hidden="true" className="avatar-shine" />
-              </span>
-            </span>
-          </div>
-          <div className="name-wave relative z-10 mt-4 flex cursor-default items-center justify-center gap-2">
-            <p className="text-2xl font-extrabold tracking-tight text-foreground">
-              <WaveText text="Meljhon Deaño" />
-            </p>
-            <span className="verified-badge relative flex h-5 w-5 shrink-0 items-center justify-center">
-              <span aria-hidden="true" className="verified-ring" />
-              <CheckCircle2 className="relative h-5 w-5 fill-primary text-primary-foreground" aria-label="Verified" />
-            </span>
-          </div>
-          <p className="role-wave mt-1 cursor-default text-sm font-medium leading-snug text-muted-foreground">
-            <span className="block"><WaveText text="Technical Virtual Assistant" /></span>
-            <span className="block"><WaveText text="IT Support · Executive Assistant" /></span>
-          </p>
-          <LocationHover />
-          <SidebarClock />
-          <div className="mt-4 flex items-center justify-center gap-2.5">
-            <a href={`mailto:${CONTACT.email}`} aria-label="Email Meljhon" className="sidebar-social"><Mail className="h-4 w-4" /></a>
-            <a href={CONTACT.phoneHref} aria-label="Call Meljhon" className="sidebar-social"><Phone className="h-4 w-4" /></a>
-            <a href={CONTACT.linkedin} target="_blank" rel="noreferrer" aria-label="Meljhon on LinkedIn (opens in new tab)" className="sidebar-social"><Linkedin className="h-4 w-4" /></a>
-            {themeButton}
-          </div>
-        </div>
+        <ProfileIdentity themeButton={themeButton} />
 
         <nav aria-label="Primary" className="mt-4 space-y-0.5 border-t border-border pt-4">
           {navItems.map(({ label, href, icon: Icon }) => {
@@ -1265,13 +1304,7 @@ const PortfolioDashboard = () => {
         </nav>
 
         <div className="mt-auto border-t border-border pt-4">
-          <span className="group/live inline-flex cursor-default items-center gap-2 text-sm font-semibold text-foreground transition-colors duration-200 hover:text-primary">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success transition-transform duration-200 group-hover/live:scale-125" />
-            </span>
-            Open to remote work
-          </span>
+          <AvailabilityBadge />
         </div>
       </aside>
 
@@ -1288,8 +1321,14 @@ const PortfolioDashboard = () => {
       </button>
 
       <main id="main" tabIndex={-1} className={`relative pt-16 outline-none transition-[margin,padding] duration-300 ease-out ${sidebarOpen ? "lg:ml-[280px] lg:pt-0" : "lg:ml-0 lg:pt-12"}`}>
-        <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-[1280px] px-3 py-6 sm:px-7 sm:py-8 lg:px-10 lg:py-10">
           <section id="home" className="scroll-mt-20 lg:scroll-mt-6">
+            <div ref={profileRef} className="mx-auto mb-6 max-w-lg rounded-3xl border border-border bg-card/90 px-5 pb-5 pt-7 shadow-card backdrop-blur lg:hidden">
+              <ProfileIdentity />
+              <div className="mt-4 flex justify-center border-t border-border pt-4">
+                <AvailabilityBadge />
+              </div>
+            </div>
             <ToolsMarquee />
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="max-w-3xl">
@@ -1300,7 +1339,6 @@ const PortfolioDashboard = () => {
                 <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-muted-foreground sm:text-lg">
                   Need one reliable professional who can manage your administrative workload and resolve day-to-day technical issues?
                 </p>
-                <LiveClock />
               </div>
               <Button size="lg" onClick={() => scrollTo("#contact")} className="shrink-0 gap-2 rounded-full bg-secondary-foreground px-6 text-background shadow-card hover:bg-secondary-foreground/90">
                 Get in touch <ArrowUpRight className="h-4 w-4" />
@@ -1308,7 +1346,7 @@ const PortfolioDashboard = () => {
             </div>
           </section>
 
-          <div className="mt-7 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4">
+          <div className="mt-7 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4">
             <ul aria-label="Highlights" className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {highlights.map(({ icon: Icon, tag, value, label }) => (
                 <li key={tag} className="stat-tile group/stat">
@@ -1407,7 +1445,7 @@ const PortfolioDashboard = () => {
             </section>
           </div>
 
-          <section id="services" className="mt-7 scroll-mt-24 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4 lg:scroll-mt-6">
+          <section id="services" className="mt-7 scroll-mt-24 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4 lg:scroll-mt-6">
             <div className="px-3 pb-4 pt-3 sm:px-4">
               <CardHeading icon={ListChecks} title="Services" subtitle="Technical and administrative work I take off your plate." />
             </div>
@@ -1481,7 +1519,7 @@ const PortfolioDashboard = () => {
             ))}
           </section>
 
-          <section id="tools" className="mt-7 scroll-mt-24 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4 lg:scroll-mt-6">
+          <section id="tools" className="mt-7 scroll-mt-24 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4 lg:scroll-mt-6">
             <div className="px-3 pb-4 pt-3 sm:px-4">
               <CardHeading icon={Layers} title="Tools & Software" subtitle="The apps, platforms, and systems I use day to day." />
             </div>
@@ -1513,7 +1551,7 @@ const PortfolioDashboard = () => {
 
           <Testimonials onContact={() => scrollTo("#contact")} />
 
-          <section id="experience" className="mt-7 scroll-mt-24 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4 lg:scroll-mt-6">
+          <section id="experience" className="mt-7 scroll-mt-24 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4 lg:scroll-mt-6">
             <div className="px-3 pb-4 pt-3 sm:px-4">
               <CardHeading icon={BriefcaseBusiness} title="Experience" subtitle="IT support, executive assistance, and administrative operations." />
             </div>
@@ -1549,14 +1587,14 @@ const PortfolioDashboard = () => {
             </div>
           </section>
 
-          <section id="contact" className="mt-7 scroll-mt-24 rounded-[2rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-3 sm:p-4 lg:scroll-mt-6">
+          <section id="contact" className="mt-7 scroll-mt-24 rounded-[1.5rem] border border-primary/20 bg-gradient-to-b from-primary/[0.06] to-primary/[0.16] p-2 sm:rounded-[2rem] sm:p-4 lg:scroll-mt-6">
             <div className="px-3 pb-4 pt-3 sm:px-4">
               <CardHeading icon={Mail} title="Let’s Work Together" subtitle="Available for remote technical, executive, and administrative support." />
             </div>
             <ContactSection />
           </section>
 
-          <footer className="flex flex-col gap-2 px-2 py-7 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <footer className="flex flex-col gap-2 px-2 pb-24 pt-7 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <p>© {new Date().getFullYear()} Meljhon Deaño</p>
           </footer>
         </div>

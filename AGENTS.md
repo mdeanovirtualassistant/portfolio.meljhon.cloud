@@ -8,3 +8,5 @@
 - The Contact section FAQ (`src/components/ContactSection.tsx`) and the assistant must stay consistent with each other and with the résumé. The message form has no backend: it only opens a prefilled `mailto:` link, so never describe a message as sent or stored.
 - Contact details and the live CRM link are defined once in `src/lib/contact.ts`; import them instead of retyping them.
 - Review counts, averages, and praise themes come from `src/lib/testimonials.ts`; the assistant text in `src/lib/assistant.ts` that says how many reviews there are must be updated by hand when a review is added.
+- The profile block (photo, name, roles, location, clock, contact icons) is one component, `ProfileIdentity`, used by the desktop sidebar and the top of the mobile page. Change it there so both stay identical.
+- The loading screen lives in `index.html` between the `app-loader` comment markers (the artifact build copies it from there) and is removed by `src/lib/splash.ts`. Keep its name, photo, and roles in step with the profile.

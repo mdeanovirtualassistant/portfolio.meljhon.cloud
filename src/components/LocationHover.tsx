@@ -59,17 +59,28 @@ const LocationHover = () => {
   const [pinned, setPinned] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const [pos, setPos] = useState({ left: 0, top: 0 });
+  const [pos, setPos] = useState({ left: 0, top: 0, width: POPOVER_WIDTH });
   const open = hovering || pinned;
 
   const place = useCallback(() => {
     const trigger = triggerRef.current;
     if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
-    const sidebarRight = trigger.closest("aside")?.getBoundingClientRect().right ?? rect.right;
+    const width = Math.min(POPOVER_WIDTH, window.innerWidth - 24);
+    const aside = trigger.closest("aside");
+    if (!aside) {
+      // On phones the trigger sits in the page, not the sidebar: centre the card under it.
+      setPos({
+        left: Math.max(12, (window.innerWidth - width) / 2),
+        top: Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - POPOVER_HEIGHT - 12)),
+        width,
+      });
+      return;
+    }
     setPos({
-      left: Math.max(12, Math.min(sidebarRight + 12, window.innerWidth - POPOVER_WIDTH - 12)),
+      left: Math.max(12, Math.min(aside.getBoundingClientRect().right + 12, window.innerWidth - width - 12)),
       top: Math.max(12, Math.min(rect.top - 70, window.innerHeight - POPOVER_HEIGHT - 12)),
+      width,
     });
   }, []);
 
@@ -148,7 +159,7 @@ const LocationHover = () => {
           aria-label={`Map of ${PLACE.name}`}
           onMouseEnter={enter}
           onMouseLeave={leave}
-          style={{ left: pos.left, top: pos.top, width: POPOVER_WIDTH }}
+          style={{ left: pos.left, top: pos.top, width: pos.width }}
           className={`fixed z-[60] origin-left overflow-hidden rounded-2xl border border-border bg-card shadow-profile transition-[transform,opacity,visibility] duration-200 ease-out ${open ? "visible translate-x-0 scale-100 opacity-100" : "pointer-events-none invisible -translate-x-2 scale-95 opacity-0"}`}
         >
           <div className="relative h-44 w-full overflow-hidden bg-muted">
