@@ -738,3 +738,475 @@ All colors MUST be HSL.
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 }
+
+/* ---------- Projects coverflow ---------- */
+@layer components {
+  .pc-stage {
+    container-type: inline-size;
+    --pc-w: min(17.5rem, 74vw);
+    --pc-h: 34rem;
+    --pc-top: 3.25rem;
+    --pc-step: calc(var(--pc-w) * 0.66);
+    --pc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (min-width: 640px) {
+    .pc-stage .pc-shot {
+      flex-basis: 50%;
+    }
+
+    .pc-stage {
+      --pc-w: 22rem;
+      --pc-h: 30.5rem;
+      --pc-top: 5rem;
+      --pc-step: calc(var(--pc-w) * 0.84);
+    }
+  }
+
+  /* One tinted background per project; the active one fades in. */
+  .pc-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    background:
+      radial-gradient(55% 60% at 50% 48%, hsl(var(--ph) 95% 60% / 0.3), transparent 72%),
+      radial-gradient(40% 50% at 10% 0%, hsl(var(--ph) 90% 70% / 0.25), transparent 70%),
+      linear-gradient(180deg, hsl(var(--ph) 80% 97%) 0%, hsl(var(--ph) 70% 92%) 100%);
+  }
+
+  .dark .pc-bg {
+    background:
+      radial-gradient(55% 60% at 50% 48%, hsl(var(--ph) 100% 52% / 0.4), transparent 72%),
+      radial-gradient(40% 50% at 90% 0%, hsl(var(--ph) 100% 60% / 0.2), transparent 70%),
+      linear-gradient(180deg, hsl(var(--ph) 60% 11%) 0%, hsl(var(--ph) 65% 6%) 100%);
+  }
+
+  .pc-bg[data-on="true"] {
+    opacity: 1;
+  }
+
+  .pc-dots-grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(hsl(var(--foreground) / 0.1) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, #000 25%, transparent 85%);
+    mask-image: radial-gradient(70% 70% at 50% 50%, #000 25%, transparent 85%);
+  }
+
+  /* Giant outlined word and floor glow that sit behind the cards. */
+  .pc-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .pc-layer[data-on="true"] {
+    opacity: 1;
+  }
+
+  .pc-word {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, 6%);
+    transition: transform 1s var(--pc-ease);
+    /* Sized so every word spans the stage: short words get huge, long words shrink to fit. */
+    font-size: min(calc(96cqw / (var(--n) * 0.68)), 17rem);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .pc-word::before {
+    content: attr(data-word);
+    color: transparent;
+    -webkit-text-stroke: 2px hsl(var(--ph) 90% 48% / 0.5);
+  }
+
+  .dark .pc-word::before {
+    -webkit-text-stroke-color: hsl(var(--ph) 100% 68% / 0.5);
+  }
+
+  .pc-layer[data-on="true"] .pc-word {
+    transform: translate(-50%, 0);
+  }
+
+  .pc-floor {
+    position: absolute;
+    left: 50%;
+    bottom: -1.1rem;
+    width: calc(var(--pc-w) * 1.05);
+    height: 2.6rem;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, hsl(var(--ph) 100% 55% / 0.6), transparent);
+    filter: blur(10px);
+  }
+
+  .pc-track {
+    position: relative;
+    height: calc(var(--pc-h) + var(--pc-top));
+    perspective: 1500px;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .pc-card {
+    position: absolute;
+    top: var(--pc-top);
+    left: 50%;
+    width: var(--pc-w);
+    height: var(--pc-h);
+    margin-left: calc(var(--pc-w) / -2);
+    cursor: pointer;
+    transform: translate3d(calc(var(--d) * var(--pc-step)), 0, calc(var(--abs) * -90px)) rotateY(calc(var(--d) * -14deg)) scale(calc(1 - var(--abs) * 0.09));
+    filter: brightness(calc(1 - var(--abs) * 0.26)) saturate(calc(1 - var(--abs) * 0.12));
+    transition: transform 0.75s var(--pc-ease), opacity 0.6s ease, filter 0.6s ease, visibility 0s;
+  }
+
+  .pc-card.is-active {
+    cursor: default;
+  }
+
+  .pc-card.is-near {
+    opacity: 0.85;
+  }
+
+  .pc-card.is-far {
+    opacity: 0.45;
+  }
+
+  .pc-card.is-gone {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.75s var(--pc-ease), opacity 0.6s ease, filter 0.6s ease, visibility 0s linear 0.6s;
+  }
+
+  .pc-card.pc-jump {
+    transition: none;
+  }
+
+  .pc-card img {
+    -webkit-user-drag: none;
+  }
+
+  /* Glow that surrounds the active card. */
+  .pc-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 1.75rem;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 0 6px hsl(var(--ph) 100% 60% / 0.16), 0 0 56px hsl(var(--ph) 100% 58% / 0.55);
+    transition: opacity 0.6s ease;
+  }
+
+  .pc-card.is-active::after {
+    opacity: 1;
+    animation: pc-pulse 3.4s ease-in-out infinite;
+  }
+
+  @keyframes pc-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  .pc-face {
+    position: relative;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    border: 1px solid hsl(0 0% 100% / 0.12);
+    background-color: hsl(var(--ph) 50% 10%);
+    background-image: radial-gradient(80% 40% at 50% 100%, hsl(var(--ph) 100% 50% / 0.2), transparent);
+    color: #fff;
+    box-shadow: 0 30px 60px -30px hsl(220 60% 5% / 0.6);
+    transition: border-color 0.5s ease;
+  }
+
+  .pc-card.is-active .pc-face {
+    border-color: hsl(var(--ph) 100% 70% / 0.9);
+  }
+
+  .pc-shot {
+    position: relative;
+    flex: 0 0 46%;
+    overflow: hidden;
+    background: hsl(var(--ph) 40% 12%);
+  }
+
+  .pc-card.is-active .pc-shot {
+    cursor: zoom-in;
+  }
+
+  .pc-shot img {
+    transition: transform 0.7s var(--pc-ease);
+  }
+
+  .pc-card.is-active:hover .pc-shot img {
+    transform: scale(1.05);
+  }
+
+  .pc-shot::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 60%;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, hsl(var(--ph) 50% 10%));
+  }
+
+  .pc-pill,
+  .pc-index {
+    position: absolute;
+    top: 0.8rem;
+    z-index: 2;
+    border: 1px solid hsl(var(--ph) 100% 72% / 0.45);
+    border-radius: 999px;
+    background: hsl(var(--ph) 70% 7% / 0.8);
+    color: #fff;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .pc-pill {
+    left: 0.8rem;
+    max-width: calc(100% - 4.2rem);
+    overflow: hidden;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pc-index {
+    right: 0.8rem;
+    padding: 0.25rem 0.6rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .pc-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    margin-top: -1.4rem;
+    padding: 0 1.15rem 1.15rem;
+  }
+
+  .pc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.6875rem;
+    color: hsl(var(--ph) 100% 84%);
+  }
+
+  .pc-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .pc-title {
+    margin-top: 0.55rem;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .pc-desc {
+    margin-top: 0.5rem;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: hsl(0 0% 100% / 0.78);
+  }
+
+  .pc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+  }
+
+  .pc-tags li {
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid hsl(0 0% 100% / 0.18);
+    border-radius: 999px;
+    background: hsl(0 0% 100% / 0.08);
+    padding: 0.2rem 0.6rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.65rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: hsl(0 0% 100% / 0.92);
+  }
+
+  .pc-tags li.pc-more {
+    border-color: hsl(var(--ph) 100% 72% / 0.5);
+    background: hsl(var(--ph) 100% 60% / 0.22);
+  }
+
+  .pc-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    transition: opacity 0.4s ease, visibility 0s;
+  }
+
+  /* Only the front card shows its buttons; the others are reached by clicking the card or using the arrows. */
+  .pc-card:not(.is-active) .pc-actions {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  }
+
+  .pc-cta,
+  .pc-icon-btn {
+    display: inline-flex;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .pc-cta {
+    flex: 1;
+    gap: 0.4rem;
+    background: hsl(214 100% 46%);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .pc-cta:hover {
+    background: hsl(214 100% 40%);
+    transform: translateY(-2px);
+  }
+
+  .pc-icon-btn {
+    width: 2.75rem;
+    flex: none;
+    border: 1px solid hsl(0 0% 100% / 0.28);
+    background: hsl(0 0% 100% / 0.08);
+    color: #fff;
+  }
+
+  .pc-icon-btn:hover {
+    background: hsl(0 0% 100% / 0.2);
+    transform: translateY(-2px);
+  }
+
+  .pc-cta:focus-visible,
+  .pc-icon-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  /* Controls under the stage follow the page theme. */
+  .pc-nav {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: none;
+    place-items: center;
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px;
+    background: hsl(var(--card) / 0.85);
+    color: hsl(var(--foreground));
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .pc-nav:hover {
+    transform: scale(1.06);
+    border-color: transparent;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .pc-nav-sm {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .pc-dots {
+    display: flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px;
+    background: hsl(var(--card) / 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .pc-dot {
+    display: flex;
+    min-width: 1.5rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pc-dot span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: hsl(var(--muted-foreground) / 0.6);
+    transition: width 0.35s var(--pc-ease), background-color 0.3s ease;
+  }
+
+  .pc-dot:hover span {
+    background: hsl(var(--primary) / 0.7);
+  }
+
+  .pc-dot[aria-current="true"] span {
+    width: 1.75rem;
+    background: hsl(var(--primary));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pc-card.is-active::after { animation: none; }
+    .pc-card.is-active:hover .pc-shot img { transform: none; }
+  }
+}

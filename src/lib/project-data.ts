@@ -69,3 +69,23 @@ export const calendarProject = {
   honeybook: { src: "/projects/calendar-honeybook.webp", alt: "HoneyBook month view with calendar categories for booked projects, meetings, payments, tentative projects, and archived projects, and recurring weekly events such as check-ins, deep focus, and huddles; account names are blurred" },
   google: { src: "/projects/calendar-google.webp", alt: "Google Calendar week view for October 2024 with every event title blurred, showing color-coded time blocks from early morning to afternoon" },
 };
+
+/** Single-screenshot support projects (Upwork case studies). */
+export const supportProjects = [
+  {
+    title: "Microsoft 365 to OVH Cloud",
+    role: "IT Support",
+    description: "Domain, mail, and calendar integration for OVH email hosting with Microsoft 365.",
+    image: "/projects/microsoft-365-ovh-cloud.webp",
+    alt: "OVH Cloud and Microsoft 365 email hosting configuration",
+    skills: ["Hosting Setup", "Microsoft Windows", "Microsoft Office", "Administrative Support"],
+  },
+  {
+    title: "MikroTik WLAN & Hotspot",
+    role: "Remote Support",
+    description: "Step-by-step RouterBOARD WLAN and hotspot configuration through Winbox.",
+    image: "/projects/mikrotik-winbox-configuration.webp",
+    alt: "MikroTik RouterOS Winbox wireless network configuration",
+    skills: ["MikroTik", "MikroTik RouterBOARD", "MikroTik RouterOS"],
+  },
+];

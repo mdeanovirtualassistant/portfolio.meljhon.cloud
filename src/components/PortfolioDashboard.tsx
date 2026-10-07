@@ -3,7 +3,6 @@ import { flushSync } from "react-dom";
 import {
   ArrowUpRight,
   Award,
-  BarChart3,
   BriefcaseBusiness,
   CalendarDays,
   Bot,
@@ -17,7 +16,6 @@ import {
   CreditCard,
   Database,
   FolderKanban,
-  Flag,
   FolderTree,
   Globe,
   GraduationCap,
@@ -25,7 +23,6 @@ import {
   Headset,
   Home,
   Laptop,
-  LayoutDashboard,
   Layers,
   Lock,
   LifeBuoy,
@@ -48,8 +45,6 @@ import {
   MessagesSquare,
   NotebookText,
   MonitorSmartphone,
-  ChevronLeft,
-  ChevronRight,
   ScreenShare,
   Server,
   ShieldCheck,
@@ -58,7 +53,6 @@ import {
   Sparkles,
   Sun,
   UserRound,
-  Users,
   X,
 } from "lucide-react";
 import {
@@ -73,10 +67,8 @@ import ContactSection from "@/components/ContactSection";
 import Testimonials from "@/components/Testimonials";
 import ScrollUX from "@/components/ScrollUX";
 import { averageRating, testimonials } from "@/lib/testimonials";
-import { CONTACT, CRM_URL } from "@/lib/contact";
-import { sheetProjects, calendarProject } from "@/lib/project-data";
-import SheetProjectTile from "@/components/SheetProjects";
-import CalendarProjectTile from "@/components/CalendarProject";
+import { CONTACT } from "@/lib/contact";
+import ProjectsShowcase from "@/components/ProjectsShowcase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -209,25 +201,6 @@ const serviceGroups: { title: string; note: string; cards: ServiceCard[] }[] = [
         ],
       },
     ],
-  },
-];
-
-const projects = [
-  {
-    title: "Microsoft 365 to OVH Cloud",
-    role: "IT Support",
-    description: "Domain, mail, and calendar integration for OVH email hosting with Microsoft 365.",
-    image: "/projects/microsoft-365-ovh-cloud.webp",
-    alt: "OVH Cloud and Microsoft 365 email hosting configuration",
-    skills: ["Hosting Setup", "Microsoft Windows", "Microsoft Office", "Administrative Support"],
-  },
-  {
-    title: "MikroTik WLAN & Hotspot",
-    role: "Remote Support",
-    description: "Step-by-step RouterBOARD WLAN and hotspot configuration through Winbox.",
-    image: "/projects/mikrotik-winbox-configuration.webp",
-    alt: "MikroTik RouterOS Winbox wireless network configuration",
-    skills: ["MikroTik", "MikroTik RouterBOARD", "MikroTik RouterOS"],
   },
 ];
 
@@ -703,19 +676,6 @@ const useTheme = () => {
   return { dark, toggle };
 };
 
-/** Shows a project screenshot, or a tidy placeholder if the image cannot be loaded. */
-const ProjectImage = ({ src, alt, className, lazy = false }: { src: string; alt: string; className: string; lazy?: boolean }) => {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <span role="img" aria-label={alt} className="flex h-full min-h-32 w-full items-center justify-center rounded-xl bg-muted text-muted-foreground">
-        <FolderKanban className="h-8 w-8" />
-      </span>
-    );
-  }
-  return <img src={src} alt={alt} loading={lazy ? "lazy" : undefined} decoding="async" onError={() => setFailed(true)} className={className} />;
-};
-
 const CardHeading = ({ icon: Icon, title, subtitle }: { icon: typeof Home; title: string; subtitle?: string }) => (
   <div className="flex items-start gap-3">
     <span className="icon-chip"><Icon className="h-5 w-5" /></span>
@@ -725,29 +685,6 @@ const CardHeading = ({ icon: Icon, title, subtitle }: { icon: typeof Home; title
     </div>
   </div>
 );
-
-const crmGallery = [
-  { file: "dashboard", title: "Dashboard", caption: "Pipeline status, vertical and market breakdowns, and Touch 2 and Touch 3 alerts at a glance.", alt: "NC Compliance CRM dashboard with pipeline status and due-touch alerts" },
-  { file: "prospects", title: "Prospects", caption: "Searchable prospect table with status, vertical, market, and priority filters.", alt: "NC Compliance CRM prospect table with filters and status badges" },
-  { file: "email", title: "Email outreach", caption: "Outreach queue grouped by Touch 1, 2, and 3, with compose, Gmail, and mark-sent actions.", alt: "NC Compliance CRM outreach queue grouped by touch sequence" },
-  { file: "calendar", title: "Calendar", caption: "Monthly view of scheduled touches and upcoming prospect activity.", alt: "NC Compliance CRM outreach calendar for May 2026" },
-  { file: "finder", title: "Prospect finder", caption: "Search by organization type, vertical, and city, then add selected results to the CRM.", alt: "NC Compliance CRM prospect finder with map and results table" },
-  { file: "admin", title: "Admin panel", caption: "System overview with live metrics, pipeline counts, and the user roster.", alt: "NC Compliance CRM admin panel with system overview and user roster" },
-  { file: "login", title: "Sign in", caption: "Username and password sign-in, plus Google sign-in, with role-based access.", alt: "NC Compliance CRM sign-in screen" },
-];
-
-const crmFeatures = [
-  { icon: BarChart3, title: "Prospect pipeline", text: "Track prospects through New, T1 and T2 follow-up, Review, Nurture, Replied, DNR, and Converted." },
-  { icon: Users, title: "User and role management", text: "Admin, Manager, User, Viewer, and Super Admin access levels." },
-  { icon: Mail, title: "Email outreach", text: "Outreach queues, email templates, follow-ups, replies, and multi-touch campaigns." },
-  { icon: CalendarDays, title: "Outreach calendar", text: "Scheduled touches and upcoming prospect activities in one view." },
-  { icon: Flag, title: "Compliance and risk tracking", text: "Record issues such as worker classification, documentation gaps, and regulatory concerns." },
-  { icon: LayoutDashboard, title: "Admin dashboard", text: "Monitor users, active prospects, conversions, flagged records, and pipeline performance." },
-  { icon: Lock, title: "Secure authentication", text: "Username and password or Google sign-in, with role-based workspace access." },
-];
-
-const crmSummary =
-  "A full-featured CRM built to help nonprofit organizations and small businesses organize prospect relationships, automate structured outreach, track compliance risks, and manage follow-ups through a centralized, role-based dashboard.";
 
 /** Explicit paths (not built from a template string) so every screenshot can be found by search and inlined by the artifact build. */
 const serviceImages: Record<string, string> = {
@@ -766,234 +703,6 @@ const serviceImagesLight: Record<string, string> = {
   "Inbox, Calendar & Meetings": "/projects/service-inbox-light.webp",
   "Research & Records": "/projects/service-research-light.webp",
   "Recruiting & Workflow": "/projects/service-recruit-light.webp",
-};
-
-const crmImages: Record<string, string> = {
-  dashboard: "/projects/nc-crm-dashboard.webp",
-  login: "/projects/nc-crm-login.webp",
-  prospects: "/projects/nc-crm-prospects.webp",
-  email: "/projects/nc-crm-email.webp",
-  finder: "/projects/nc-crm-finder.webp",
-  calendar: "/projects/nc-crm-calendar.webp",
-  admin: "/projects/nc-crm-admin.webp",
-};
-const crmSrc = (file: string) => crmImages[file] ?? crmImages.dashboard;
-
-/** External link to the deployed CRM. Opens in a new tab, so the portfolio stays open behind it. */
-const CrmVisitLink = ({ overlay = false }: { overlay?: boolean }) => (
-  <a
-    href={CRM_URL}
-    target="_blank"
-    rel="noreferrer"
-    aria-label="Visit live CRM, NC Compliance CRM (opens in new tab)"
-    className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold shadow-card transition duration-200 hover:-translate-y-0.5 ${overlay ? "absolute right-3 top-3 z-10 border border-border bg-background text-foreground hover:bg-card" : "bg-secondary-foreground text-background hover:bg-secondary-foreground/90"}`}
-  >
-    Visit live CRM <ArrowUpRight className="h-4 w-4" />
-  </a>
-);
-
-const CrmGallery = () => {
-  const [index, setIndex] = useState(0);
-  const current = crmGallery[index];
-  return (
-    <div className="min-h-0 flex-1 overflow-auto">
-      <div className="bg-muted p-3 sm:p-6">
-        <ProjectImage src={crmSrc(current.file)} alt={current.alt} className="mx-auto h-auto max-h-[60vh] w-auto max-w-full rounded-xl border border-border bg-card shadow-card" />
-        <p className="mx-auto mt-3 max-w-3xl text-center text-sm text-muted-foreground"><span className="font-semibold text-foreground">{current.title}.</span> {current.caption}</p>
-        <ul className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Screenshots">
-          {crmGallery.map((shot, i) => (
-            <li key={shot.file}>
-              <button
-                type="button"
-                onClick={() => setIndex(i)}
-                aria-label={`Show ${shot.title}`}
-                aria-current={i === index ? "true" : undefined}
-                className={`block h-14 w-24 overflow-hidden rounded-lg border-2 bg-card transition ${i === index ? "border-primary" : "border-border opacity-70 hover:opacity-100"}`}
-              >
-                <img src={crmSrc(shot.file)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-6">
-        <p className="text-sm leading-relaxed text-muted-foreground sm:col-span-2">
-          A custom CRM platform designed for nonprofits and small businesses to manage prospects, outreach, compliance-related notes, and follow-up activities in one centralized workspace.
-        </p>
-        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
-          <CrmVisitLink />
-          <span className="text-xs text-muted-foreground">Opens the live site in a new tab.</span>
-        </div>
-        {crmFeatures.map(({ icon: Icon, title, text }) => (
-          <div key={title} className="flex items-start gap-3 rounded-2xl border border-border bg-background p-3.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="h-4 w-4" /></span>
-            <div className="min-w-0">
-              <h3 className="text-sm font-bold text-foreground">{title}</h3>
-              <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{text}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const CrmProjectTile = () => (
-  <div className="relative flex w-full">
-  <Dialog>
-    <DialogTrigger asChild>
-      <Button variant="ghost" className="group h-full min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-border bg-background p-0 text-left hover:bg-background">
-        <span className="block aspect-[16/9] overflow-hidden bg-muted">
-          <ProjectImage lazy src={crmSrc("dashboard")} alt={crmGallery[0].alt} className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]" />
-        </span>
-        <span className="block whitespace-normal p-4">
-          <span className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">Featured · CRM platform</span>
-            <span className="text-[11px] font-semibold text-muted-foreground">{crmGallery.length} screens</span>
-          </span>
-          <span className="mt-1 block text-lg font-bold leading-snug text-foreground">NC Compliance CRM</span>
-          <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{crmSummary}</span>
-          <span className="mt-3 flex flex-wrap gap-1.5">
-            {["Prospect Pipeline", "Role-Based Access", "Email Outreach", "Compliance Tracking"].map((skill) => (
-              <span key={skill} className="hover-chip rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{skill}</span>
-            ))}
-          </span>
-        </span>
-      </Button>
-    </DialogTrigger>
-    <DialogContent className="flex max-h-[94vh] w-[96vw] max-w-6xl flex-col overflow-hidden p-0">
-      <DialogHeader className="border-b border-border px-5 py-4 pr-12 text-left">
-        <DialogTitle>NC Compliance CRM</DialogTitle>
-        <DialogDescription>{crmSummary}</DialogDescription>
-      </DialogHeader>
-      <CrmGallery />
-    </DialogContent>
-  </Dialog>
-  <CrmVisitLink overlay />
-  </div>
-);
-
-const ProjectTile = ({ project }: { project: (typeof projects)[number] }) => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" className="group h-full min-h-0 w-full flex-col items-stretch justify-start overflow-hidden rounded-2xl border border-border bg-background p-0 text-left hover:bg-background">
-          <span className="block aspect-[16/9] overflow-hidden bg-muted">
-            <ProjectImage lazy src={project.image} alt={project.alt} className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]" />
-          </span>
-          <span className="block whitespace-normal p-4">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">{project.role}</span>
-            <span className="mt-1 block text-lg font-bold leading-snug text-foreground">{project.title}</span>
-            <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{project.description}</span>
-            <span className="mt-3 flex flex-wrap gap-1.5">
-              {project.skills.map((skill) => (
-                <span key={skill} className="hover-chip rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{skill}</span>
-              ))}
-            </span>
-          </span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="flex max-h-[94vh] w-[96vw] max-w-7xl flex-col overflow-hidden p-0">
-        <DialogHeader className="border-b border-border px-5 py-4 pr-12 text-left">
-          <DialogTitle>{project.title}</DialogTitle>
-          <DialogDescription>{project.description}</DialogDescription>
-        </DialogHeader>
-        <div className="overflow-auto bg-muted p-3 sm:p-6">
-          <ProjectImage src={project.image} alt={project.alt} className="mx-auto h-auto max-h-[76vh] w-auto max-w-full rounded-xl border border-border bg-card shadow-card" />
-        </div>
-      </DialogContent>
-    </Dialog>
-);
-
-const slideCount = projects.length + sheetProjects.length + 2;
-
-/** Projects shown one at a time: arrows, dots, swipe, and a gentle autoplay that stops once the visitor takes control. */
-const ProjectsSlideshow = () => {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [auto, setAuto] = useState(() => !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
-  const touchX = useRef<number | null>(null);
-  const titles = ["NC Compliance CRM", ...sheetProjects.map((project) => project.title), calendarProject.title, ...projects.map((project) => project.title)];
-
-  const go = (next: number, manual = true) => {
-    setIndex((next + slideCount) % slideCount);
-    if (manual) setAuto(false);
-  };
-
-  useEffect(() => {
-    if (!auto || paused) return;
-    const id = window.setInterval(() => {
-      if (document.querySelector('[role="dialog"]')) return;
-      setIndex((i) => (i + 1) % slideCount);
-    }, 6500);
-    return () => window.clearInterval(id);
-  }, [auto, paused]);
-
-  const slides = [<CrmProjectTile key="crm" />, ...sheetProjects.map((project) => <SheetProjectTile key={project.title} project={project} />), <CalendarProjectTile key="calendar" />, ...projects.map((project) => <ProjectTile key={project.title} project={project} />)];
-
-  return (
-    <div
-      role="group"
-      aria-roledescription="carousel"
-      aria-label="Projects"
-      className="mt-5"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") go(index - 1);
-        if (e.key === "ArrowRight") go(index + 1);
-      }}
-      onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
-      onTouchEnd={(e) => {
-        if (touchX.current === null) return;
-        const dx = e.changedTouches[0].clientX - touchX.current;
-        touchX.current = null;
-        if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
-      }}
-    >
-      <div className="overflow-hidden rounded-2xl">
-        <div className="flex transition-transform duration-500 ease-out motion-reduce:transition-none" style={{ transform: `translateX(-${index * 100}%)` }} aria-live={auto && !paused ? "off" : "polite"}>
-          {slides.map((slide, i) => (
-            <div
-              key={titles[i]}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${slideCount}: ${titles[i]}`}
-              aria-hidden={i === index ? undefined : true}
-              className={`flex w-full shrink-0 basis-full transition-[visibility] duration-0 ${i === index ? "visible" : "invisible delay-500"}`}
-            >
-              {slide}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <Button type="button" variant="outline" size="icon" onClick={() => go(index - 1)} aria-label="Previous project" className="h-9 w-9 rounded-full">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2" role="group" aria-label="Choose project">
-            {titles.map((title, i) => (
-              <button
-                key={title}
-                type="button"
-                aria-current={i === index ? "true" : undefined}
-                aria-label={`Show project ${i + 1}: ${title}`}
-                onClick={() => go(i)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${i === index ? "w-7 bg-primary" : "w-2.5 bg-border hover:bg-primary/50"}`}
-              />
-            ))}
-          </div>
-          <span className="text-xs font-semibold tabular-nums text-muted-foreground" aria-hidden="true">{index + 1} / {slideCount}</span>
-        </div>
-        <Button type="button" variant="outline" size="icon" onClick={() => go(index + 1)} aria-label="Next project" className="h-9 w-9 rounded-full">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
 };
 
 /** Current time, ticking every second. */
@@ -1359,47 +1068,48 @@ const PortfolioDashboard = () => {
                 </li>
               ))}
             </ul>
-            <div className="columns-1 gap-4 xl:columns-2 [&>section]:mb-4 [&>section]:break-inside-avoid">
-              <section id="projects" className="bento-card scroll-mt-24">
-                <CardHeading icon={FolderKanban} title="Projects" subtitle="Real support, configuration, and build work." />
-                <ProjectsSlideshow />
-              </section>
-
-              <section id="about" className="bento-card scroll-mt-24">
-                <CardHeading icon={UserRound} title="About" subtitle="Who I am and how I work." />
-                <p className="mt-4 text-[15px] font-medium leading-7 text-foreground">
-                  I’m a Technical Virtual Assistant, IT Support Specialist, and Executive Assistant with more than four years of combined experience across technical support, remote operations, executive assistance, nonprofit administration, and government service.
-                </p>
-                <div className="mt-3 space-y-3 text-sm leading-7 text-muted-foreground">
-                  <p>
-                    I help businesses stay organized, productive, and technically supported by managing inboxes, calendars, meetings, documentation, workflows, user accounts, devices, and common IT problems.
-                  </p>
-                  <p>
-                    My technical experience spans service desk support and Windows 11 desktop deployment, and I have provided executive and board administrative support to a U.S.-based organization while working independently during Eastern Time hours.
-                  </p>
-                  <p>
-                    I also build practical tools, like NC Compliance CRM, a role-based CRM that helps nonprofits and small businesses manage prospects, outreach, and compliance follow-ups, plus Google Sheets outreach trackers and dashboards for nonprofit and SMB prospecting.
-                  </p>
-                </div>
-                <figure className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                  <blockquote className="text-sm leading-relaxed text-foreground">
-                    Clients describe me as reliable, proactive, and detail-oriented, and say I communicate clearly and follow through until the work is done.
-                  </blockquote>
-                  <figcaption className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <span role="img" aria-label="5 out of 5 stars" className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} aria-hidden="true" className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
-                        ))}
-                      </span>
-                      {averageRating} across {testimonials.length} client reviews
-                    </span>
-                    <button type="button" onClick={() => scrollTo("#testimonials")} className="font-semibold text-primary hover:underline">Read the reviews</button>
-                  </figcaption>
-                </figure>
-
-              </section>
+            <div className="mb-4">
+              <ProjectsShowcase />
             </div>
+
+            <section id="about" className="bento-card mb-4 scroll-mt-24">
+              <CardHeading icon={UserRound} title="About" subtitle="Who I am and how I work." />
+              <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start">
+              <div>
+              <p className="text-[15px] font-medium leading-7 text-foreground">
+                I’m a Technical Virtual Assistant, IT Support Specialist, and Executive Assistant with more than four years of combined experience across technical support, remote operations, executive assistance, nonprofit administration, and government service.
+              </p>
+              <div className="mt-3 space-y-3 text-sm leading-7 text-muted-foreground">
+                <p>
+                  I help businesses stay organized, productive, and technically supported by managing inboxes, calendars, meetings, documentation, workflows, user accounts, devices, and common IT problems.
+                </p>
+                <p>
+                  My technical experience spans service desk support and Windows 11 desktop deployment, and I have provided executive and board administrative support to a U.S.-based organization while working independently during Eastern Time hours.
+                </p>
+                <p>
+                  I also build practical tools, like NC Compliance CRM, a role-based CRM that helps nonprofits and small businesses manage prospects, outreach, and compliance follow-ups, plus Google Sheets outreach trackers and dashboards for nonprofit and SMB prospecting.
+                </p>
+              </div>
+              </div>
+              <figure className="rounded-2xl border border-primary/20 bg-primary/5 p-4 lg:sticky lg:top-6">
+                <blockquote className="text-sm leading-relaxed text-foreground">
+                  Clients describe me as reliable, proactive, and detail-oriented, and say I communicate clearly and follow through until the work is done.
+                </blockquote>
+                <figcaption className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <span role="img" aria-label="5 out of 5 stars" className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} aria-hidden="true" className="h-3.5 w-3.5 fill-orange-500 text-orange-500" />
+                      ))}
+                    </span>
+                    {averageRating} across {testimonials.length} client reviews
+                  </span>
+                  <button type="button" onClick={() => scrollTo("#testimonials")} className="font-semibold text-primary hover:underline">Read the reviews</button>
+                </figcaption>
+              </figure>
+              </div>
+            </section>
+
             <section id="education" className="bento-card scroll-mt-24">
                 <CardHeading icon={GraduationCap} title="Education & Credentials" subtitle="Academic foundation and professional certifications." />
                 <div className="mt-4 grid gap-6 lg:grid-cols-2">

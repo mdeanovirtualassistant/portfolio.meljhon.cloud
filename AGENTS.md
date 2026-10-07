@@ -10,3 +10,4 @@
 - Review counts, averages, and praise themes come from `src/lib/testimonials.ts`; the assistant text in `src/lib/assistant.ts` that says how many reviews there are must be updated by hand when a review is added.
 - The profile block (photo, name, roles, location, clock, contact icons) is one component, `ProfileIdentity`, used by the desktop sidebar and the top of the mobile page. Change it there so both stay identical.
 - The loading screen lives in `index.html` between the `app-loader` comment markers (the artifact build copies it from there) and is removed by `src/lib/splash.ts`. Keep its name, photo, and roles in step with the profile.
+- Projects are one list in `src/components/ProjectsShowcase.tsx` (card blurbs, tags, accent hue, ghost word). To add a project, add its data to `src/lib/project-data.ts` (or `crm-data.ts`), add an item there, and give it a dialog body; card blurbs stay short and are condensed from the project's own description.
